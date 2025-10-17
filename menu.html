@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>专属菜单</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+        }
+        
+        body {
+            background-color: #f9f7f7;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            display: flex;
+            gap: 20px;
+        }
+        
+        .categories-sidebar {
+            width: 200px;
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .categories-sidebar h3 {
+            margin-bottom: 15px;
+            color: #ff6b6b;
+            font-size: 1.2rem;
+        }
+        
+        .category-item {
+            padding: 10px 15px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .category-item:hover {
+            background-color: #f0f0f0;
+        }
+        
+        .category-item.active {
+            background-color: #ff6b6b;
+            color: white;
+        }
+        
+        .menu-content {
+            flex: 1;
+        }
+        
+        header {
+            text-align: center;
+            padding: 30px 0;
+            background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            color: white;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .menu-controls {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 30px;
+            font-size: 1rem;
+        }
+        
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .filter-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 30px;
+            background-color: #fff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .filter-btn.active {
+            background-color: #ff9a9e;
+            color: white;
+        }
+        
+        .filter-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+        }
+        
+        .dish-card {
+            background-color: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .dish-card.sold-out {
+            background-color: #f5f5f5;
+            opacity: 0.7;
+        }
+        
+        .dish-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .dish-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+        
+        .dish-info {
+            padding: 20px;
+        }
+        
+        .dish-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+        
+        .dish-name {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #333;
+            margin-right: 10px;
+        }
+        
+        .dish-price {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #ff6b6b;
+        }
+        
+        .dish-description {
+            color: #666;
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+        }
+        
+        .dish-attributes {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-bottom: 15px;
+        }
+        
+        .attribute-tag {
+            background-color: #e9ecef;
+            color: #495057;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+        }
+        
+        .order-btn {
+            width: 100%;
+            padding: 10px;
+            background-color: #ff6b6b;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .order-btn:hover {
+            background-color: #ff5252;
+        }
+        
+        .order-btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        .sold-out-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background-color: rgba(108, 117, 125, 0.9);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px;
+            color: #666;
+        }
+        
+        .empty-state h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px;
+            color: #888;
+            font-size: 0.9rem;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: white;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        .form-group select, .form-group input {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .cancel-btn, .confirm-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .cancel-btn {
+            background-color: #f1f1f1;
+            color: #333;
+        }
+        
+        .confirm-btn {
+            background-color: #6a67ce;
+            color: white;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .categories-sidebar {
+                width: 100%;
+            }
+            
+            .menu-controls {
+                flex-direction: column;
+            }
+            
+            .filter-buttons {
+                justify-content: center;
+            }
+            
+            .menu-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="categories-sidebar">
+            <h3>菜品分类</h3>
+            <div class="category-list" id="categoryList">
+                <!-- 分类将通过JavaScript动态生成 -->
+            </div>
+        </div>
+        
+        <div class="menu-content">
+            <header>
+                <h1>专属美味菜单</h1>
+                <p class="subtitle">为你精心挑选的每一道菜品</p>
+            </header>
+            
+            <div class="menu-controls">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="搜索菜品...">
+                </div>
+                <div class="filter-buttons">
+                    <button class="filter-btn active" data-filter="all">全部</button>
+                    <button class="filter-btn" data-filter="available">可点</button>
+                    <button class="filter-btn" data-filter="sold-out">售罄</button>
+                </div>
+            </div>
+            
+            <div class="menu-grid" id="menuGrid">
+                <!-- 菜品卡片将通过JavaScript动态生成 -->
+            </div>
+            
+            <footer>
+                <p>用心制作的专属菜单 &copy; 2023</p>
+            </footer>
+        </div>
+    </div>
+    
+    <!-- 点餐模态框 -->
+    <div class="modal" id="orderModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="orderModalTitle">点餐</h2>
+                <button class="close-btn" id="closeOrderModal">&times;</button>
+            </div>
+            <form id="orderForm">
+                <div class="form-group">
+                    <label for="spiciness">辣度</label>
+                    <select id="spiciness">
+                        <option value="不辣">不辣</option>
+                        <option value="微辣">微辣</option>
+                        <option value="中辣">中辣</option>
+                        <option value="重辣">重辣</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="sweetness">甜度</label>
+                    <select id="sweetness">
+                        <option value="无糖">无糖</option>
+                        <option value="少糖">少糖</option>
+                        <option value="正常糖">正常糖</option>
+                        <option value="多糖">多糖</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="specialRequest">特殊要求</label>
+                    <input type="text" id="specialRequest" placeholder="例如：不要香菜">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="cancel-btn" id="cancelOrderBtn">取消</button>
+                    <button type="submit" class="confirm-btn">确认点餐</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // 获取菜品数据
+        let dishes = JSON.parse(localStorage.getItem('dishes')) || [
+            {
+                id: 1,
+                name: "草莓奶油蛋糕",
+                price: "¥38",
+                description: "新鲜草莓与轻盈奶油的完美结合，口感绵密香甜",
+                image: "https://images.unsplash.com/photo-1578985545062-69928b1d9587?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60",
+                category: "甜品",
+                soldOut: false,
+                attributes: ["甜点", "水果"]
+            },
+            {
+                id: 2,
+                name: "意大利肉酱面",
+                price: "¥45",
+                description: "传统意式肉酱搭配手工面条，浓郁可口",
+                image: "https://images.unsplash.com/photo-1598866594230-a7c12756260f?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60",
+                category: "主食",
+                soldOut: false,
+                attributes: ["主食", "西餐"]
+            },
+            {
+                id: 3,
+                name: "抹茶拿铁",
+                price: "¥32",
+                description: "优质抹茶粉与香浓牛奶的完美融合",
+                image: "https://images.unsplash.com/photo-1515823064-d6e0c04616a7?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60",
+                category: "饮品",
+                soldOut: true,
+                attributes: ["饮品", "热饮"]
+            },
+            {
+                id: 4,
+                name: "麻辣香锅",
+                price: "¥68",
+                description: "多种食材搭配秘制麻辣调料，香气四溢",
+                image: "https://images.unsplash.com/photo-1585032224-6e33d7b556b1?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60",
+                category: "主菜",
+                soldOut: false,
+                attributes: ["川菜", "辣味"]
+            }
+        ];
+
+        // 获取分类数据
+        let categories = JSON.parse(localStorage.getItem('categories')) || ["全部", "主菜", "主食", "甜品", "饮品"];
+        
+        // 获取订单数据
+        let orders = JSON.parse(localStorage.getItem('orders')) || [];
+
+        // DOM元素
+        const menuGrid = document.getElementById('menuGrid');
+        const searchInput = document.getElementById('searchInput');
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        const categoryList = document.getElementById('categoryList');
+        const orderModal = document.getElementById('orderModal');
+        const orderForm = document.getElementById('orderForm');
+        const closeOrderModal = document.getElementById('closeOrderModal');
+        const cancelOrderBtn = document.getElementById('cancelOrderBtn');
+        const orderModalTitle = document.getElementById('orderModalTitle');
+
+        // 当前选中的分类和菜品
+        let currentCategory = "全部";
+        let currentDishId = null;
+
+        // 初始化
+        function init() {
+            renderCategories();
+            renderDishes();
+            setupEventListeners();
+        }
+
+        // 设置事件监听器
+        function setupEventListeners() {
+            searchInput.addEventListener('input', filterDishes);
+            
+            filterBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    filterBtns.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    filterDishes();
+                });
+            });
+            
+            closeOrderModal.addEventListener('click', closeOrderModalFunc);
+            cancelOrderBtn.addEventListener('click', closeOrderModalFunc);
+            orderForm.addEventListener('submit', submitOrder);
+            
+            // 点击模态框外部关闭
+            orderModal.addEventListener('click', function(e) {
+                if (e.target === orderModal) {
+                    closeOrderModalFunc();
+                }
+            });
+        }
+
+        // 渲染分类
+        function renderCategories() {
+            categoryList.innerHTML = '';
+            
+            categories.forEach(category => {
+                const categoryItem = document.createElement('div');
+                categoryItem.className = `category-item ${category === currentCategory ? 'active' : ''}`;
+                categoryItem.textContent = category;
+                categoryItem.dataset.category = category;
+                categoryItem.addEventListener('click', function() {
+                    currentCategory = this.dataset.category;
+                    document.querySelectorAll('.category-item').forEach(item => {
+                        item.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                    filterDishes();
+                });
+                categoryList.appendChild(categoryItem);
+            });
+        }
+
+        // 渲染菜品
+        function renderDishes(dishesToRender = dishes) {
+            menuGrid.innerHTML = '';
+            
+            if (dishesToRender.length === 0) {
+                menuGrid.innerHTML = `
+                    <div class="empty-state">
+                        <h3>暂无菜品</h3>
+                        <p>菜单正在准备中，敬请期待</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            dishesToRender.forEach(dish => {
+                const dishCard = document.createElement('div');
+                dishCard.className = `dish-card ${dish.soldOut ? 'sold-out' : ''}`;
+                dishCard.innerHTML = `
+                    ${dish.soldOut ? '<div class="sold-out-badge">已售罄</div>' : ''}
+                    <img src="${dish.image}" alt="${dish.name}" class="dish-image">
+                    <div class="dish-info">
+                        <div class="dish-header">
+                            <h3 class="dish-name">${dish.name}</h3>
+                            <span class="dish-price">${dish.price}</span>
+                        </div>
+                        <p class="dish-description">${dish.description}</p>
+                        <div class="dish-attributes">
+                            ${dish.attributes ? dish.attributes.map(attr => `<span class="attribute-tag">${attr}</span>`).join('') : ''}
+                        </div>
+                        <button class="order-btn" ${dish.soldOut ? 'disabled' : ''} data-id="${dish.id}">
+                            ${dish.soldOut ? '已售罄' : '点餐'}
+                        </button>
+                    </div>
+                `;
+                menuGrid.appendChild(dishCard);
+            });
+            
+            // 添加事件监听器到点餐按钮
+            document.querySelectorAll('.order-btn:not(:disabled)').forEach(btn => {
+                btn.addEventListener('click', openOrderModal);
+            });
+        }
+
+        // 打开点餐模态框
+        function openOrderModal(e) {
+            const id = parseInt(e.target.dataset.id);
+            const dish = dishes.find(d => d.id === id);
+            
+            if (dish) {
+                orderModalTitle.textContent = `点餐 - ${dish.name}`;
+                currentDishId = id;
+                orderForm.reset();
+                orderModal.style.display = 'flex';
+            }
+        }
+
+        // 关闭点餐模态框
+        function closeOrderModalFunc() {
+            orderModal.style.display = 'none';
+        }
+
+        // 提交订单
+        function submitOrder(e) {
+            e.preventDefault();
+            
+            const spiciness = document.getElementById('spiciness').value;
+            const sweetness = document.getElementById('sweetness').value;
+            const specialRequest = document.getElementById('specialRequest').value;
+            
+            const dish = dishes.find(d => d.id === currentDishId);
+            
+            if (dish) {
+                const order = {
+                    id: Date.now(),
+                    dishId: dish.id,
+                    dishName: dish.name,
+                    dishPrice: dish.price,
+                    spiciness,
+                    sweetness,
+                    specialRequest,
+                    timestamp: new Date().toLocaleString()
+                };
+                
+                orders.push(order);
+                localStorage.setItem('orders', JSON.stringify(orders));
+                
+                alert(`点餐成功！\n菜品：${dish.name}\n辣度：${spiciness}\n甜度：${sweetness}\n特殊要求：${specialRequest || '无'}`);
+                closeOrderModalFunc();
+            }
+        }
+
+        // 筛选和搜索菜品
+        function filterDishes() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const activeFilter = document.querySelector('.filter-btn.active').dataset.filter;
+            
+            let filteredDishes = dishes.filter(dish => {
+                const matchesSearch = dish.name.toLowerCase().includes(searchTerm) || 
+                                     dish.description.toLowerCase().includes(searchTerm);
+                
+                let matchesFilter = true;
+                if (activeFilter === 'available') {
+                    matchesFilter = !dish.soldOut;
+                } else if (activeFilter === 'sold-out') {
+                    matchesFilter = dish.soldOut;
+                }
+                
+                const matchesCategory = currentCategory === "全部" || dish.category === currentCategory;
+                
+                return matchesSearch && matchesFilter && matchesCategory;
+            });
+            
+            renderDishes(filteredDishes);
+        }
+
+        // 初始化应用
+        init();
+    </script>
+</body>
+</html>
